@@ -22,7 +22,8 @@ namespace AI.PurchaseService.Shared
             services.RegisterCorrelationIdServices();
 
             services.RegisterHealthCheck();
-            services.RegisterMessageBroker(configuration);
+            // Temporarily disable MassTransit to focus on core API functionality
+            // services.RegisterMessageBroker(configuration);
             return services;
         }
 
@@ -60,6 +61,8 @@ namespace AI.PurchaseService.Shared
         public static IServiceCollection AddAuthentication(this IServiceCollection services,
             IConfiguration configuration)
         {
+            // Temporarily disable JWT authentication to focus on core API functionality
+            /*
             services.AddAuthentication()
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
@@ -71,6 +74,7 @@ namespace AI.PurchaseService.Shared
                         ValidAudience = Constants.Audience.Universal
                     };
                 });
+            */
             return services;
         }
 
@@ -91,19 +95,24 @@ namespace AI.PurchaseService.Shared
 
         private static IServiceCollection RegisterMessageBroker(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddMassTransit(x =>
+            var rabbitMqHostName = configuration.GetValue<string>("Configs:RabbitMQ:HostName");
+            
+            if (!string.IsNullOrEmpty(rabbitMqHostName))
             {
-                x.UsingRabbitMq((context, cfg) =>
+                services.AddMassTransit(x =>
                 {
-                    cfg.Host(configuration.GetValue<string>("Configs:RabbitMQ:HostName"), configuration.GetValue<ushort>("Configs:RabbitMQ:PortNumber"), "/", h =>
+                    x.UsingRabbitMq((context, cfg) =>
                     {
-                        h.Username(configuration.GetValue<string>("Secrets:RabbitMQ:Username"));
-                        h.Password(configuration.GetValue<string>("Secrets:RabbitMQ:UserPassword"));
+                        cfg.Host(rabbitMqHostName, configuration.GetValue<ushort>("Configs:RabbitMQ:PortNumber"), "/", h =>
+                        {
+                            h.Username(configuration.GetValue<string>("Secrets:RabbitMQ:Username") ?? "guest");
+                            h.Password(configuration.GetValue<string>("Secrets:RabbitMQ:UserPassword") ?? "guest");
+                        });
+                        
+                        cfg.ConfigureEndpoints(context);
                     });
-                    
-                    cfg.ConfigureEndpoints(context);
                 });
-            });
+            }
             
             return services;
         }

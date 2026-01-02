@@ -1,76 +1,38 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using CorrelationId;
 using FastEndpoints;
-using AI.PurchaseService.Shared;
-using Serilog;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using OpenTelemetry.Metrics;
+using FastEndpoints.Swagger;
+using AI.PurchaseService.Domain.Data;
+using AI.PurchaseService.Domain.Mappings;
+using Microsoft.EntityFrameworkCore;
 
-var webAppBuilder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-webAppBuilder.Services.AddEndpointsApiExplorer();
-webAppBuilder.Services.AddFastEndpoints(o => o.IncludeAbstractValidators = true);
+// Add FastEndpoints and Swagger
+builder.Services.AddFastEndpoints();
+builder.Services.SwaggerDocument();
 
-webAppBuilder.Configuration.SetBasePath(webAppBuilder.Environment.ContentRootPath)
-    .AddEnvironmentVariables()
-    .AddJsonFile("appsettings.json", optional: false)
-    .AddJsonFile($"appsettings.{webAppBuilder.Environment.EnvironmentName}.json", optional: true);
+// Add Entity Framework
+builder.Services.AddDbContext<PurchaseDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-webAppBuilder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly());
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(PurchaseMappingProfile));
 
-webAppBuilder.Logging.ClearProviders();
-webAppBuilder.Host.UseSerilog((context, _, loggerConfiguration) =>
-    {
-        loggerConfiguration.ReadFrom.Configuration(context.Configuration);
-    }
-);
-
-
-webAppBuilder.Services.AddControllers();
-
-// Add OpenTelemetry for observability
-webAppBuilder.Services.AddOpenTelemetry()
-    .WithTracing(builder => builder
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation())
-    .WithMetrics(builder => builder
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation());
-
-webAppBuilder.Services.AddConfigurations(webAppBuilder.Configuration)
-    .AddServiceExtension(webAppBuilder.Configuration)
-    .AddAuthentication(webAppBuilder.Configuration);
-var app = webAppBuilder.Build();
-
-
-// Configure the HTTP request pipeline.
+var app = builder.Build();
+app.Environment.EnvironmentName = "Development";
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+    app.UseSwaggerGen();
 }
-app.UseCorrelationId();
-app.UseSerilogRequestLogging();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
+
 app.UseFastEndpoints(c =>
 {
     c.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     c.Serializer.Options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     c.Serializer.Options.DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower;
-    c.Endpoints.Configurator = ep =>
-    {
-        ep.PostProcessors(Order.After, new GlobalErrorLogger());
-    };
-    c.Versioning.Prefix = "v";
-    c.Versioning.DefaultVersion = 1;
-    c.Versioning.PrependToRoute = true;
 });
-app.UseMiddleware<ErrorHandlerMiddleware>();
-app.MapHealthChecks("/purchase-service/api/v1/health/liveness");
-app.MapHealthChecks("/purchase-service/api/v1/health/readiness");
 
 app.Run();

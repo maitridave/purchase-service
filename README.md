@@ -72,7 +72,7 @@ purchase-service/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/maitridave/purchase-service.git
+git clone https://github.com/<your-org>/purchase-service.git
 cd purchase-service
 ```
 
@@ -151,6 +151,8 @@ docker run -d \
 
 The API will be available at `http://localhost:8080`
 
+**Note:** For production deployments, use Docker secrets or mounted configuration files instead of environment variables to protect sensitive data.
+
 ### 5. Running with Docker Compose (Optional)
 
 For a complete setup with SQL Server and RabbitMQ, you can create a `docker-compose.yml` file with the required services. Example:
@@ -163,7 +165,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PurchaseServiceDB;User Id=sa;Password=YourStrong@Password;TrustServerCertificate=true
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PurchaseServiceDB;User Id=sa;Password=<YOUR_STRONG_PASSWORD>;TrustServerCertificate=true
       - Configs__RabbitMQ__HostName=rabbitmq
     depends_on:
       - sqlserver
@@ -173,7 +175,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Password
+      - SA_PASSWORD=<YOUR_STRONG_PASSWORD>
     ports:
       - "1433:1433"
       
@@ -189,6 +191,8 @@ Then run:
 ```bash
 docker-compose up -d
 ```
+
+**Important:** Replace `<YOUR_STRONG_PASSWORD>` with a secure password. For production environments, use Docker secrets or external secret management tools instead of hardcoded credentials.
 
 ## API Endpoints
 

@@ -1,0 +1,35 @@
+﻿{
+  "profiles": {
+    "Local": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "launch/url/path",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Local",
+        "API_GATEWAY_SERVICE_UPSTREAM_HOST": "",
+        "IDENTITY_PROVIDER_SERVICE_HOST": ""
+      }
+    },
+    "Development": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Staging": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Staging"
+      }
+    },
+    "Production": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+    }
+  }
+}

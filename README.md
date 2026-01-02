@@ -83,7 +83,7 @@ Update the connection string and RabbitMQ settings in `src/Api/appsettings.json`
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Data Source=localhost;Initial Catalog=PurchaseServiceDB;Integrated Security=true;TrustServerCertificate=true;"
+    "DefaultConnection": "YOUR_CONNECTION_STRING"
   },
   "Configs": {
     "RabbitMQ": {
@@ -93,30 +93,14 @@ Update the connection string and RabbitMQ settings in `src/Api/appsettings.json`
   },
   "Secrets": {
     "RabbitMQ": {
-      "Username": "guest",
-      "UserPassword": "guest"
+      "Username": {username},
+      "UserPassword": {password}
     }
   }
 }
 ```
 
-### 3. Database Setup
-
-The application uses Entity Framework Core migrations. To set up the database:
-
-```bash
-# Navigate to the API project directory
-cd src/Api
-
-# Apply migrations (if migrations exist)
-dotnet ef database update
-
-# Or create a new migration if needed
-dotnet ef migrations add InitialCreate
-dotnet ef database update
-```
-
-### 4. Running Locally
+### 3. Running Locally
 
 #### Option A: Using .NET CLI
 
@@ -242,7 +226,7 @@ curl -X POST http://localhost:5000/purchase-service/api/v1/purchases \
 ## API Documentation
 
 When running in Development mode, Swagger UI is available at:
-- `http://localhost:5000/swagger/index.html`
+- `[http://localhost:5000/swagger/index.html](http://13.204.74.15:8082/swagger/index.html#/Purchase-Service)`
 
 This provides interactive API documentation where you can test endpoints directly.
 
@@ -279,62 +263,12 @@ The service participates in an event-driven architecture:
 
 All events are exchanged via RabbitMQ using MassTransit.
 
-## Configuration
-
-### Environment Variables
-
-You can configure the application using environment variables:
-
-- `ConnectionStrings__DefaultConnection`: Database connection string
-- `Configs__RabbitMQ__HostName`: RabbitMQ host
-- `Configs__RabbitMQ__PortNumber`: RabbitMQ port
-- `Secrets__RabbitMQ__Username`: RabbitMQ username
-- `Secrets__RabbitMQ__UserPassword`: RabbitMQ password
-- `ASPNETCORE_ENVIRONMENT`: Environment name (Development, Production)
-- `ASPNETCORE_URLS`: URLs the application listens on
-
-### Purchase Status Values
-
-Valid purchase status values:
-- `Completed`: Purchase transaction completed
-- `Canceled`: Purchase transaction canceled
-- `Assigned`: Purchase assigned but not completed
-
 ## Health Checks
 
 The service includes health check endpoints for monitoring:
 
 - `/health`: Basic health check
 - `/health/ready`: Readiness check (includes database connectivity)
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Issues**
-   - Ensure SQL Server is running
-   - Verify connection string is correct
-   - Check firewall settings
-
-2. **RabbitMQ Connection Issues**
-   - Ensure RabbitMQ is running
-   - Verify RabbitMQ credentials
-   - Check network connectivity
-
-3. **Port Already in Use**
-   - Change the port in `launchSettings.json` or use environment variables
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is part of an internal service architecture.
 
 ## Support
 

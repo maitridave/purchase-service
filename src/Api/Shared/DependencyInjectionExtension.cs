@@ -107,6 +107,16 @@ namespace AI.PurchaseService.Shared
                     
                     x.UsingRabbitMq((context, cfg) =>
                     {
+                        // Configure JSON serialization options to match API settings
+                        cfg.UseRawJsonSerializer(RawSerializerOptions.AnyMessageType, isDefault: true);
+                        cfg.ConfigureJsonSerializerOptions(options =>
+                        {
+                            options.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+                            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                            options.DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower;
+                            return options;
+                        });
+                        
                         cfg.Host(rabbitMqHostName, configuration.GetValue<ushort>("Configs:RabbitMQ:PortNumber"), "/", h =>
                         {
                             h.Username(configuration.GetValue<string>("Secrets:RabbitMQ:Username") ?? "guest");
@@ -117,18 +127,39 @@ namespace AI.PurchaseService.Shared
                         cfg.ReceiveEndpoint("OfferCreated", e =>
                         {
                             e.PrefetchCount = 1;
+                            
+                            // Configure retry policy
+                            e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                            
+                            // Configure error handling
+                            e.DiscardFaultedMessages();
+                            
                             e.ConfigureConsumer<AI.PurchaseService.Domain.Consumers.OfferCreatedConsumer>(context);
                         });
                         
                         cfg.ReceiveEndpoint("OfferUpdated", e =>
                         {
                             e.PrefetchCount = 1;
+                            
+                            // Configure retry policy
+                            e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                            
+                            // Configure error handling
+                            e.DiscardFaultedMessages();
+                            
                             e.ConfigureConsumer<AI.PurchaseService.Domain.Consumers.OfferUpdatedConsumer>(context);
                         });
                         
                         cfg.ReceiveEndpoint("TransportCreated", e =>
                         {
                             e.PrefetchCount = 1;
+                            
+                            // Configure retry policy
+                            e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                            
+                            // Configure error handling
+                            e.DiscardFaultedMessages();
+                            
                             e.ConfigureConsumer<AI.PurchaseService.Domain.Consumers.TransportCreatedConsumer>(context);
                         });
                     });

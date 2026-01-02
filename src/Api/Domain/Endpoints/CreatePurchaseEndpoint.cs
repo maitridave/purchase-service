@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using AI.PurchaseService.Domain.Data;
 using AI.PurchaseService.Domain.DTOs;
 using AI.PurchaseService.Domain.Entities;
+using AI.PurchaseService.Domain.Events;
+using MassTransit;
 
 namespace AI.PurchaseService.Domain.Endpoints
 {
@@ -10,11 +12,13 @@ namespace AI.PurchaseService.Domain.Endpoints
     {
         private readonly PurchaseDbContext _context;
         private readonly AutoMapper.IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
         
-        public CreatePurchaseEndpoint(PurchaseDbContext context, AutoMapper.IMapper mapper)
+        public CreatePurchaseEndpoint(PurchaseDbContext context, AutoMapper.IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
         
         public override void Configure()
@@ -37,6 +41,22 @@ namespace AI.PurchaseService.Domain.Endpoints
             
             _context.Purchases.Add(purchase);
             await _context.SaveChangesAsync(ct);
+            
+            // Publish PurchaseCreated event to RabbitMQ
+            var purchaseCreatedEvent = new PurchaseCreatedEvent
+            {
+                Id = purchase.Id,
+                BuyerId = purchase.BuyerId,
+                OfferId = purchase.OfferId,
+                TransportId = purchase.TransportId,
+                AssignedAt = purchase.AssignedAt,
+                BidAmount = purchase.BidAmount,
+                Status = purchase.Status,
+                BuyerName = purchase.BuyerName,
+                CreatedAt = purchase.LastModifiedAt
+            };
+            
+            await _publishEndpoint.Publish(purchaseCreatedEvent, ct);
             
             var response = _mapper.Map<PurchaseResponse>(purchase);
             await SendCreatedAtAsync<GetPurchaseEndpoint>(new { Id = purchase.Id }, response, cancellation: ct);

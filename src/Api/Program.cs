@@ -5,6 +5,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using AI.PurchaseService.Domain.Data;
 using AI.PurchaseService.Domain.Mappings;
+using AI.PurchaseService.Shared;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,9 @@ builder.Services.AddDbContext<PurchaseDbContext>(options =>
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(PurchaseMappingProfile));
+
+// Register custom services including MassTransit
+builder.Services.AddServiceExtension(builder.Configuration);
 
 var app = builder.Build();
 app.Environment.EnvironmentName = "Development";

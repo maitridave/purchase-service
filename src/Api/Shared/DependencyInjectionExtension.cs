@@ -22,8 +22,7 @@ namespace AI.PurchaseService.Shared
             services.RegisterCorrelationIdServices();
 
             services.RegisterHealthCheck();
-            // Temporarily disable MassTransit to focus on core API functionality
-            // services.RegisterMessageBroker(configuration);
+            services.RegisterMessageBroker(configuration);
             return services;
         }
 

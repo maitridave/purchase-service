@@ -26,8 +26,7 @@ namespace AI.PurchaseService.Domain.Entities
         [StringLength(20)]
         public string? Status { get; set; } // COMPLETED, CANCELLED
         
-        [StringLength(100)]
-        public string? BuyerName { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
         public DateTime LastModifiedAt { get; set; } = DateTime.UtcNow;
     }

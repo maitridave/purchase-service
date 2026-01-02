@@ -32,9 +32,10 @@ namespace AI.PurchaseService.Domain.Configuration
                 
             builder.Property(p => p.Status)
                 .HasMaxLength(20);
-                
-            builder.Property(p => p.BuyerName)
-                .HasMaxLength(100);
+        
+            builder.Property(p => p.CreatedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()");
                 
             builder.Property(p => p.LastModifiedAt)
                 .HasColumnType("datetime2")

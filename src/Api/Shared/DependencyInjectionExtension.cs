@@ -100,6 +100,11 @@ namespace AI.PurchaseService.Shared
             {
                 services.AddMassTransit(x =>
                 {
+                    // Register consumers
+                    x.AddConsumer<AI.PurchaseService.Domain.Consumers.OfferCreatedConsumer>();
+                    x.AddConsumer<AI.PurchaseService.Domain.Consumers.OfferUpdatedConsumer>();
+                    x.AddConsumer<AI.PurchaseService.Domain.Consumers.TransportCreatedConsumer>();
+                    
                     x.UsingRabbitMq((context, cfg) =>
                     {
                         cfg.Host(rabbitMqHostName, configuration.GetValue<ushort>("Configs:RabbitMQ:PortNumber"), "/", h =>
@@ -108,7 +113,24 @@ namespace AI.PurchaseService.Shared
                             h.Password(configuration.GetValue<string>("Secrets:RabbitMQ:UserPassword") ?? "guest");
                         });
                         
-                        cfg.ConfigureEndpoints(context);
+                        // Configure individual endpoints with prefetch count = 1
+                        cfg.ReceiveEndpoint("OfferCreated", e =>
+                        {
+                            e.PrefetchCount = 1;
+                            e.ConfigureConsumer<AI.PurchaseService.Domain.Consumers.OfferCreatedConsumer>(context);
+                        });
+                        
+                        cfg.ReceiveEndpoint("OfferUpdated", e =>
+                        {
+                            e.PrefetchCount = 1;
+                            e.ConfigureConsumer<AI.PurchaseService.Domain.Consumers.OfferUpdatedConsumer>(context);
+                        });
+                        
+                        cfg.ReceiveEndpoint("TransportCreated", e =>
+                        {
+                            e.PrefetchCount = 1;
+                            e.ConfigureConsumer<AI.PurchaseService.Domain.Consumers.TransportCreatedConsumer>(context);
+                        });
                     });
                 });
             }

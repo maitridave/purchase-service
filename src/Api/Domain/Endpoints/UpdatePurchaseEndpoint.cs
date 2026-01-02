@@ -59,9 +59,6 @@ namespace AI.PurchaseService.Domain.Endpoints
                 
             if (!string.IsNullOrEmpty(req.Status))
                 purchase.Status = req.Status;
-                
-            if (!string.IsNullOrEmpty(req.BuyerName))
-                purchase.BuyerName = req.BuyerName;
             
             purchase.LastModifiedAt = DateTime.UtcNow;
             

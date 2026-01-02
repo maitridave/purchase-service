@@ -37,6 +37,7 @@ namespace AI.PurchaseService.Domain.Endpoints
         public override async Task HandleAsync(CreatePurchaseRequest req, CancellationToken ct)
         {
             var purchase = _mapper.Map<Purchase>(req);
+            purchase.CreatedAt = DateTime.UtcNow;
             purchase.LastModifiedAt = DateTime.UtcNow;
             
             _context.Purchases.Add(purchase);
@@ -52,8 +53,7 @@ namespace AI.PurchaseService.Domain.Endpoints
                 AssignedAt = purchase.AssignedAt,
                 BidAmount = purchase.BidAmount,
                 Status = purchase.Status,
-                BuyerName = purchase.BuyerName,
-                CreatedAt = purchase.LastModifiedAt
+                CreatedAt = purchase.CreatedAt
             };
             
             await _publishEndpoint.Publish(purchaseCreatedEvent, ct);

@@ -27,9 +27,6 @@ namespace AI.PurchaseService.Domain.DTOs
         [JsonPropertyName("status")]
         public string? Status { get; set; }
         
-        [StringLength(100)]
-        [JsonPropertyName("buyer_name")]
-        public string? BuyerName { get; set; }
     }
     
     public class UpdatePurchaseRequest
@@ -56,10 +53,7 @@ namespace AI.PurchaseService.Domain.DTOs
         [StringLength(20)]
         [JsonPropertyName("status")]
         public string? Status { get; set; }
-        
-        [StringLength(100)]
-        [JsonPropertyName("buyer_name")]
-        public string? BuyerName { get; set; }
+
     }
     
     public class PurchaseResponse
@@ -85,8 +79,8 @@ namespace AI.PurchaseService.Domain.DTOs
         [JsonPropertyName("status")]
         public string? Status { get; set; }
         
-        [JsonPropertyName("buyer_name")]
-        public string? BuyerName { get; set; }
+        [JsonPropertyName("created_at")]
+        public DateTime CreatedAt { get; set; }
         
         [JsonPropertyName("last_modified_at")]
         public DateTime LastModifiedAt { get; set; }

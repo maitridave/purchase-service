@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace AI.PurchaseService.Domain.Events
 {
-    public class PurchaseCreatedEvent
+    public class PurchaseUpdatedEvent
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }
@@ -27,6 +27,15 @@ namespace AI.PurchaseService.Domain.Events
         
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
+        
+        [JsonPropertyName("updated_at")]
+        public DateTime UpdatedAt { get; set; }
+        
+        [JsonPropertyName("changed_properties")]
+        public Dictionary<string, object> ChangedProperties { get; set; } = new();
+        
+        [JsonPropertyName("previous_values")]
+        public Dictionary<string, object> PreviousValues { get; set; } = new();
         
         [JsonPropertyName("event_timestamp")]
         public DateTime EventTimestamp { get; set; } = DateTime.UtcNow;

@@ -21,12 +21,22 @@ namespace AI.PurchaseService.Domain.Consumers
 
         public async Task Consume(ConsumeContext<OfferCreated> context)
         {
-            var offerCreated = context.Message;
-            
-            _logger.LogInformation("Received OfferCreated event for Offer ID: {OfferId}", offerCreated.Id);
-
             try
             {
+                var offerCreated = context.Message;
+                
+                if (offerCreated == null)
+                {
+                    _logger.LogWarning("Received null OfferCreated message");
+                    return;
+                }
+                
+                _logger.LogInformation("Received OfferCreated event for Offer ID: {OfferId}, Status: {Status}, BuyerId: {BuyerId}", 
+                    offerCreated.Id, offerCreated.Status, offerCreated.BuyerId);
+
+                // Log the raw message for debugging
+                _logger.LogDebug("OfferCreated message details: {@OfferCreated}", offerCreated);
+
                 // Only create purchase for OPEN offers
                 var purchase = new Purchase
                 {
@@ -62,8 +72,14 @@ namespace AI.PurchaseService.Domain.Consumers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating purchase from OfferCreated event for Offer ID: {OfferId}", 
-                    offerCreated.Id);
+                _logger.LogError(ex, "Error consuming OfferCreated event. Message: {Message}", ex.Message);
+                
+                // Log additional context information
+                if (context?.Message != null)
+                {
+                    _logger.LogError("Failed to process OfferCreated for Offer ID: {OfferId}", context.Message.Id);
+                }
+                
                 throw; // Re-throw to trigger retry mechanism if configured
             }
         }
